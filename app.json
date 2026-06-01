@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Akku-Lade-Erinnerung",
+    "slug": "battery-check",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.local.batterycheck"
+    }
+  }
+}
