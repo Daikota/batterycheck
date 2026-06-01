@@ -4,33 +4,52 @@ import { ActionButton } from '../components/ActionButton';
 import { Card } from '../components/Card';
 import { Screen } from '../components/Screen';
 import { StatusPill } from '../components/StatusPill';
-import { useBatteryStatus } from '../features/battery/batteryStatus';
+import { useBatteryInfo } from '../features/battery/useBatteryInfo';
 import { useAppTheme } from '../theme/useAppTheme';
 
 function BatteryCard() {
   const theme = useAppTheme();
-  const batteryStatus = useBatteryStatus();
+  const batteryInfo = useBatteryInfo();
 
   const percentage =
-    batteryStatus.kind === 'ready' ? `${Math.round(batteryStatus.percentage * 100)}%` : '--';
+    batteryInfo.batteryLevelPercent === null ? '--' : `${batteryInfo.batteryLevelPercent} %`;
   const chargingText =
-    batteryStatus.kind === 'ready'
-      ? batteryStatus.isCharging
-        ? 'Laedt gerade'
-        : 'Laedt nicht'
-      : batteryStatus.detail;
+    batteryInfo.isCharging === null
+      ? 'Unbekannt'
+      : batteryInfo.isCharging
+        ? 'Wird geladen'
+        : 'Lädt nicht';
+  const statusText = batteryInfo.isLoading ? 'Lädt' : batteryInfo.errorMessage ? 'Fehler' : 'Live';
+  const statusTone = batteryInfo.errorMessage ? 'warning' : 'success';
 
   return (
     <Card>
       <View style={styles.cardHeader}>
         <Text style={[styles.cardLabel, { color: theme.colors.textMuted }]}>Aktueller Akku</Text>
-        <StatusPill
-          label={batteryStatus.kind === 'ready' ? 'Live' : 'Platzhalter'}
-          tone={batteryStatus.kind === 'ready' ? 'success' : 'neutral'}
-        />
+        <StatusPill label={statusText} tone={batteryInfo.isLoading ? 'neutral' : statusTone} />
       </View>
       <Text style={[styles.batteryValue, { color: theme.colors.text }]}>{percentage}</Text>
-      <Text style={[styles.bodyText, { color: theme.colors.textMuted }]}>{chargingText}</Text>
+      <View style={styles.batteryDetails}>
+        <Text style={[styles.bodyText, { color: theme.colors.textMuted }]}>
+          {batteryInfo.isLoading ? 'Akkudaten werden geladen ...' : chargingText}
+        </Text>
+        {batteryInfo.errorMessage ? (
+          <Text style={[styles.bodyText, { color: theme.colors.danger }]}>
+            {batteryInfo.errorMessage}
+          </Text>
+        ) : null}
+      </View>
+      <View style={styles.cardAction}>
+        <ActionButton
+          label={batteryInfo.isLoading ? 'Aktualisiert ...' : 'Aktualisieren'}
+          onPress={() => {
+            void batteryInfo.refreshBatteryInfo();
+          }}
+          variant="secondary"
+          size="compact"
+          disabled={batteryInfo.isLoading}
+        />
+      </View>
     </Card>
   );
 }
@@ -48,7 +67,7 @@ function RuleCard() {
         Noch keine Regel eingerichtet
       </Text>
       <Text style={[styles.bodyText, { color: theme.colors.textMuted }]}>
-        Platzhalter fuer Version 0.1.0
+        Platzhalter für Version 0.2.0
       </Text>
     </Card>
   );
@@ -58,7 +77,7 @@ export function HomeScreen() {
   const theme = useAppTheme();
 
   function showPlaceholderAlert(action: string) {
-    Alert.alert(action, 'Dieser Schritt ist ein Platzhalter fuer Version 0.1.0.');
+    Alert.alert(action, 'Dieser Schritt ist ein Platzhalter für Version 0.2.0.');
   }
 
   return (
@@ -73,7 +92,7 @@ export function HomeScreen() {
             label="Test-Benachrichtigung"
             onPress={() => showPlaceholderAlert('Test-Benachrichtigung')}
             variant="secondary"
-            accessibilityHint="Loest noch keine echte Benachrichtigung aus."
+            accessibilityHint="Löst noch keine echte Benachrichtigung aus."
           />
         </>
       }
@@ -137,5 +156,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     lineHeight: 21,
+  },
+  batteryDetails: {
+    gap: 6,
+  },
+  cardAction: {
+    alignItems: 'flex-start',
+    marginTop: 16,
   },
 });

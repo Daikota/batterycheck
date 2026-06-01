@@ -3,11 +3,14 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { useAppTheme } from '../theme/useAppTheme';
 
 type ButtonVariant = 'primary' | 'secondary';
+type ButtonSize = 'regular' | 'compact';
 
 type ActionButtonProps = {
   label: string;
   onPress: () => void;
   variant?: ButtonVariant;
+  size?: ButtonSize;
+  disabled?: boolean;
   accessibilityHint?: string;
 };
 
@@ -15,20 +18,24 @@ export function ActionButton({
   label,
   onPress,
   variant = 'primary',
+  size = 'regular',
+  disabled = false,
   accessibilityHint,
 }: ActionButtonProps) {
   const theme = useAppTheme();
   const isPrimary = variant === 'primary';
+  const isCompact = size === 'compact';
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityHint={accessibilityHint}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         {
-          minHeight: 52,
+          minHeight: isCompact ? 44 : 52,
           borderRadius: theme.radius.pill,
           backgroundColor: isPrimary
             ? pressed
@@ -36,7 +43,9 @@ export function ActionButton({
               : theme.colors.accent
             : theme.colors.surfaceStrong,
           borderColor: isPrimary ? theme.colors.accent : theme.colors.border,
-          opacity: pressed ? 0.88 : 1,
+          opacity: disabled ? 0.56 : pressed ? 0.88 : 1,
+          paddingHorizontal: isCompact ? 14 : 18,
+          paddingVertical: isCompact ? 10 : 14,
         },
       ]}
     >
@@ -45,6 +54,7 @@ export function ActionButton({
           styles.label,
           {
             color: isPrimary ? theme.colors.textOnAccent : theme.colors.text,
+            fontSize: isCompact ? 14 : 16,
           },
         ]}
       >
@@ -59,11 +69,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
   },
   label: {
-    fontSize: 16,
     fontWeight: '700',
   },
 });
